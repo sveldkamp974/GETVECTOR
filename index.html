@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Get Vector — PNG/JPG to EPS in 24 hours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#EDEAE0;
+    --cream-2:#E5E1D4;
+    --red:#DD3B25;
+    --red-dark:#B32C1C;
+    --ink:#1C1A16;
+    --ink-soft:#4A463D;
+    --line: rgba(28,26,22,0.12);
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{ background:var(--red); color:var(--cream); }
+
+  a{ color:inherit; }
+
+  .page{
+    position:relative;
+    min-height:100vh;
+  }
+
+  /* ---------- background texture: faint paper grain via layered radial ---------- */
+  .grain{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    opacity:0.5;
+    background-image:
+      radial-gradient(var(--line) 0.6px, transparent 0.6px);
+    background-size: 4px 4px;
+    mix-blend-mode:multiply;
+    opacity:0.15;
+    z-index:0;
+  }
+
+  /* ---------- content column ---------- */
+  .content{
+    position:relative;
+    z-index:1;
+    max-width:640px;
+    padding: 64px 32px 220px 64px;
+  }
+
+  h1.title{
+    margin: 0;
+    line-height:0;
+  }
+  h1.title img{
+    display:block;
+    width:100%;
+    max-width:820px;
+    height:auto;
+  }
+  .visually-hidden{
+    position:absolute;
+    width:1px; height:1px;
+    padding:0; margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
+
+  .title-rule{
+    border:none;
+    border-top:1px solid var(--line);
+    margin: 32px 0 0 0;
+  }
+
+  .subline{
+    font-size:19px;
+    line-height:1.5;
+    color:var(--ink);
+    max-width:30ch;
+    margin: 32px 0 0 0;
+    font-weight:500;
+  }
+  .subline b{
+    color:var(--red);
+    font-weight:700;
+  }
+
+  .boxes{
+    display:flex;
+    flex-direction:column;
+    gap:0;
+    margin-top:56px;
+  }
+
+  .box{
+    padding: 30px 0;
+    border-top:1px solid var(--line);
+  }
+  .box:first-of-type{
+    border-top:none;
+    padding-top:0;
+  }
+  .box:last-of-type{
+    border-bottom:1px solid var(--line);
+  }
+
+  .box .num{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--red);
+    letter-spacing:0.1em;
+    margin-bottom:10px;
+    display:block;
+  }
+
+  .box h2{
+    font-family:'Inter', sans-serif;
+    font-size:20px;
+    font-weight:700;
+    text-transform:uppercase;
+    margin:0 0 10px 0;
+    letter-spacing:-0.01em;
+  }
+
+  .box p{
+    font-size:15.5px;
+    line-height:1.65;
+    color:var(--ink-soft);
+    margin:0;
+    max-width:46ch;
+  }
+
+  /* ---------- site footer (red bar) ---------- */
+  .site-footer{
+    position:relative;
+    z-index:1;
+    background:var(--red);
+    color:var(--cream);
+    margin-top:80px;
+    padding: 48px 32px 40px 64px;
+  }
+
+  .footer-icons{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin-bottom:28px;
+  }
+  .footer-icons a{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:rgba(242,236,222,0.14);
+    transition: background 0.15s ease;
+  }
+  .footer-icons a:hover{ background:rgba(242,236,222,0.28); }
+  .footer-icons svg{ width:19px; height:19px; }
+
+  .footer-links{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 28px;
+    margin-bottom:28px;
+  }
+  .footer-links button{
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+    font-weight:600;
+    color:var(--cream);
+    background:none;
+    border:none;
+    padding:0;
+    cursor:pointer;
+    letter-spacing:-0.01em;
+    border-bottom:1px solid transparent;
+  }
+  .footer-links button:hover{ border-bottom-color:var(--cream); }
+
+  .footer-brand{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.08em;
+    color:rgba(242,236,222,0.7);
+  }
+
+  /* ---------- modal popups ---------- */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(28,26,22,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.15s ease;
+    z-index:50;
+  }
+  .modal-overlay.open{
+    opacity:1;
+    pointer-events:auto;
+  }
+  .modal-box{
+    position:relative;
+    background:var(--cream);
+    color:var(--ink);
+    max-width:520px;
+    width:100%;
+    max-height:80vh;
+    overflow-y:auto;
+    border-radius:18px;
+    padding:36px 32px;
+  }
+  .modal-box h3{
+    font-family:'Anton', sans-serif;
+    color:var(--red);
+    font-size:26px;
+    text-transform:uppercase;
+    margin:0 0 16px 0;
+  }
+  .modal-box p{
+    font-size:15px;
+    line-height:1.65;
+    color:var(--ink-soft);
+    margin:0 0 14px 0;
+  }
+  .modal-box a{ color:var(--red); }
+  .modal-box dt{
+    font-weight:700;
+    margin-top:16px;
+    color:var(--ink);
+  }
+  .modal-box dt:first-child{ margin-top:0; }
+  .modal-box dd{
+    margin:6px 0 0 0;
+    font-size:15px;
+    line-height:1.6;
+    color:var(--ink-soft);
+  }
+  .modal-close{
+    position:absolute;
+    top:18px;
+    right:18px;
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    border:none;
+    background:var(--cream-2);
+    color:var(--ink);
+    font-size:18px;
+    line-height:1;
+    cursor:pointer;
+  }
+  .modal-close:hover{ background:var(--line); }
+
+  /* ---------- fixed CTA (desktop: centre-right, stays put) ---------- */
+  .cta-wrap{
+    position:fixed;
+    top:50%;
+    right:9%;
+    transform:translateY(-50%);
+    z-index:5;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:22px;
+  }
+
+  .badge{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink);
+    background:var(--cream-2);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:8px 16px;
+    white-space:nowrap;
+  }
+  .badge b{ color:var(--red); }
+
+  .cta-button{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:280px;
+    height:88px;
+    border-radius:20px;
+    background:var(--red);
+    color:var(--cream);
+    text-decoration:none;
+    font-family:'Anton', sans-serif;
+    font-size:22px;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+    line-height:1.15;
+    text-align:center;
+    padding:16px 28px;
+    box-shadow: 0 18px 40px -12px rgba(179,44,28,0.55);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    border:none;
+  }
+  .cta-button:hover{
+    transform: scale(1.045);
+    background:var(--red-dark);
+    box-shadow: 0 22px 48px -10px rgba(179,44,28,0.65);
+  }
+  .cta-button:active{ transform: scale(0.98); }
+  .cta-button:focus-visible{
+    outline:3px solid var(--ink);
+    outline-offset:5px;
+  }
+
+  .cta-sub{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    letter-spacing:0.06em;
+    text-align:center;
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 880px){
+    .content{ padding: 48px 24px 160px 24px; max-width:100%; }
+    .cta-wrap{
+      position:fixed;
+      top:auto;
+      bottom:20px;
+      right:50%;
+      transform:translateX(50%);
+      gap:10px;
+    }
+    .badge{ display:none; }
+    .cta-button{
+      width:200px;
+      height:64px;
+      border-radius:16px;
+      font-size:15px;
+      padding:10px 20px;
+      box-shadow: 0 12px 30px -10px rgba(179,44,28,0.6);
+    }
+    h1.title img{ max-width:100%; }
+    .site-footer{ padding: 40px 24px 120px 24px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .cta-button{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<div class="page">
+  <main class="content">
+
+    <h1 class="title">
+      <img id="title-img" src="assets/title-1.svg" alt="Get Vector">
+    </h1>
+    <hr class="title-rule" aria-hidden="true">
+    <p class="subline">PNG/JPG to EPS within <b>24 hours</b>.</p>
+
+    <div class="boxes">
+
+      <div class="box">
+        <span class="num">01</span>
+        <h2>JPEG vs Vector</h2>
+        <p>A JPG or PNG is built from pixels. Zoom in far enough and it turns blocky. Printers, embroiderers and sign makers need a vector file instead, built from lines and shapes, so it stays sharp at any size. Renaming a JPG to ".eps" doesn't change that.</p>
+      </div>
+
+      <div class="box">
+        <span class="num">02</span>
+        <h2>How it works</h2>
+        <p>Send your logo and you'll receive a watermarked preview within 24 hours. Take a look and let us know if anything needs adjusting. Once you're happy and payment is made, the full editable EPS file lands in your inbox.</p>
+      </div>
+
+      <div class="box">
+        <span class="num">03</span>
+        <h2>What lands in your inbox</h2>
+        <p>A clean EPS file, hand traced and ready for print, embroidery or signage. Fully editable and yours to use however you need.</p>
+      </div>
+
+      <div class="box">
+        <span class="num">04</span>
+        <h2>How to start</h2>
+        <p>Hit the button, attach your logo and send it. That's the whole process. No account, no upload portal, no back and forth.</p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-icons">
+      <a href="mailto:info@getvector.net" aria-label="Email us">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 6h18v12H3V6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M3.5 6.5 12 13l8.5-6.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="#" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor"/>
+        </svg>
+      </a>
+    </div>
+
+    <nav class="footer-links">
+      <button type="button" data-modal="about">About us</button>
+      <button type="button" data-modal="careers">Careers</button>
+      <button type="button" data-modal="privacy">Privacy policy</button>
+      <button type="button" data-modal="faq">FAQ</button>
+    </nav>
+
+    <div class="footer-brand">getvector.net</div>
+  </footer>
+
+  <div class="cta-wrap">
+    <div class="badge">24H turnaround · <b>€15</b></div>
+    <a class="cta-button"
+       href="mailto:info@getvector.net?subject=Logo%20vectorisation%20request&body=Hi%2C%0A%0AI%27d%20like%20a%20PNG%2FJPG%20logo%20converted%20to%20EPS.%0A%0A(Please%20attach%20your%20logo%20file%20before%20sending)%0A%0AThanks!">
+      Upload your logo
+    </a>
+    <div class="cta-sub">Opens your email app</div>
+  </div>
+
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-box">
+      <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Title artwork rotation: add more filenames here as you design more versions.
+  const titleImages = ['assets/title-1.svg', 'assets/title-2.svg'];
+  const titleImg = document.getElementById('title-img');
+  titleImg.src = titleImages[Math.floor(Math.random() * titleImages.length)];
+</script>
+
+<script>
+  const modalData = {
+    about: {
+      title: "About us",
+      body: "<p>Full text coming soon.</p>"
+    },
+    careers: {
+      title: "Careers",
+      body: "<p>If you're looking for work or an internship, please email <a href=\"mailto:info@getvector.net\">info@getvector.net</a>.</p>"
+    },
+    privacy: {
+      title: "Privacy policy",
+      body: "<p>This is placeholder text. Replace it with your own policy before launch, ideally checked against current GDPR guidance since you're operating from the Netherlands.</p>" +
+            "<p><strong>Data we collect:</strong> the information you send us by email to request a vectorisation, meaning your logo file, email address and any details in your message.</p>" +
+            "<p><strong>What we use it for:</strong> solely to deliver the service you requested, converting your file and sending it back to you.</p>" +
+            "<p><strong>Storage:</strong> files and correspondence are kept only as long as needed to complete your order, then deleted.</p>" +
+            "<p><strong>Sharing:</strong> we do not sell or share your files or personal information with third parties.</p>" +
+            "<p><strong>Contact:</strong> questions about your data can be sent to <a href=\"mailto:info@getvector.net\">info@getvector.net</a>.</p>"
+    },
+    faq: {
+      title: "FAQ",
+      body: "<dl>" +
+        "<dt>What file formats do you accept?</dt><dd>PNG and JPEG. If you have something else, just ask.</dd>" +
+        "<dt>What do I get back?</dt><dd>A single EPS file, hand traced and ready for print, embroidery or signage.</dd>" +
+        "<dt>How long does it take?</dt><dd>Within 24 hours of your request.</dd>" +
+        "<dt>How much does it cost?</dt><dd>€15 per logo, flat rate.</dd>" +
+        "<dt>How do I pay?</dt><dd>Payment details are sent along with your preview, once your file is ready.</dd>" +
+        "<dt>What if I'm not happy with the result?</dt><dd>Let us know and we'll revise it until it's right.</dd>" +
+      "</dl>"
+    }
+  };
+
+  const overlay = document.getElementById('modal-overlay');
+  const modalBody = document.getElementById('modal-body');
+
+  document.querySelectorAll('[data-modal]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const d = modalData[btn.dataset.modal];
+      if(!d) return;
+      modalBody.innerHTML = '<h3>' + d.title + '</h3>' + d.body;
+      overlay.classList.add('open');
+    });
+  });
+
+  function closeModal(){ overlay.classList.remove('open'); }
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  overlay.addEventListener('click', function(e){
+    if(e.target === overlay) closeModal();
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') closeModal();
+  });
+</script>
+
+</body>
+</html>
