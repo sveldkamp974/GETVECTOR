@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thanks — Get Vector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#EDEAE0;
+    --red:#DD3B25;
+    --red-dark:#B32C1C;
+    --ink:#1C1A16;
+    --ink-soft:#4A463D;
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0;
+    padding:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    padding:48px 24px;
+    max-width:480px;
+  }
+  h1{
+    font-family:'Anton', sans-serif;
+    color:var(--red);
+    text-transform:uppercase;
+    font-size:clamp(40px, 9vw, 72px);
+    line-height:0.95;
+    margin:0 0 20px 0;
+  }
+  p{
+    font-size:16px;
+    line-height:1.6;
+    color:var(--ink-soft);
+    margin:0 0 28px 0;
+  }
+  a.back{
+    display:inline-block;
+    background:var(--red);
+    color:var(--cream);
+    text-decoration:none;
+    font-family:'Anton', sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+    padding:14px 28px;
+    border-radius:14px;
+    font-size:15px;
+  }
+  a.back:hover{ background:var(--red-dark); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Got it</h1>
+    <p>Your logo has been received. Check your inbox within 24 hours for a watermarked preview.</p>
+    <a class="back" href="/">Back to Get Vector</a>
+  </div>
+</body>
+</html>
