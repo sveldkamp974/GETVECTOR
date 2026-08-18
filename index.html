@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Get Vector — PNG/JPG to EPS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#EDEAE0;
+    --cream-2:#E5E1D4;
+    --cream-3:#DDD5BC;
+    --red:#DD3B25;
+    --red-dark:#B32C1C;
+    --ink:#1C1A16;
+    --ink-soft:#4A463D;
+    --line: rgba(28,26,22,0.12);
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{ background:var(--red); color:var(--cream); }
+  a{ color:inherit; }
+
+  .page{ position:relative; min-height:100vh; }
+
+  .grain{
+    position:fixed; inset:0; pointer-events:none;
+    background-image: radial-gradient(var(--line) 0.6px, transparent 0.6px);
+    background-size: 4px 4px;
+    mix-blend-mode:multiply;
+    opacity:0.15;
+    z-index:0;
+  }
+
+  .content{
+    position:relative;
+    z-index:1;
+    max-width:1680px;
+    margin:0 auto;
+    padding: 64px 32px 100px 64px;
+    display:grid;
+    grid-template-columns: minmax(0,960px) 1fr;
+    column-gap:48px;
+  }
+
+  .main-col{ min-width:0; }
+
+  .side-col{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+  }
+
+  h1.title{
+    max-width:880px;
+    height:240px;
+    margin: 0 auto;
+    line-height:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  h1.title img{
+    display:block;
+    max-width:100%;
+    max-height:100%;
+    width:auto;
+    height:auto;
+    object-fit:contain;
+  }
+  .visually-hidden{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+
+  .title-rule{
+    max-width:880px;
+    border:none;
+    border-top:1px solid var(--line);
+    margin: 36px auto 0 auto;
+  }
+
+  .hero{ min-height:100vh; box-sizing:border-box; }
+
+  .hero-icon{ margin:36px 0 0 0; }
+  .hero-icon svg{ display:block; width:100%; max-width:210px; height:auto; }
+
+  .eyebrow-tag{
+    font-family:'Inter', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    color:var(--ink);
+    margin: 28px 0 0 0;
+    max-width:34ch;
+  }
+
+  .subline{
+    font-family:'Anton', sans-serif;
+    text-transform:uppercase;
+    font-weight:400;
+    font-size: clamp(22px, 3.2vw, 32px);
+    line-height:1.25;
+    letter-spacing:0.01em;
+    color:var(--ink);
+    max-width:520px;
+    margin: 14px 0 0 0;
+  }
+  .subline b{ color:var(--red); font-weight:400; }
+
+  .boxes{ display:flex; flex-direction:column; gap:0; margin-top:56px; }
+
+  .box{ padding: 30px 0; }
+  .box:first-of-type{ padding-top:0; }
+
+  .box .num{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--red);
+    letter-spacing:0.1em;
+    margin-bottom:10px;
+    display:block;
+  }
+  .box h2{
+    font-family:'Inter', sans-serif;
+    font-size:20px;
+    font-weight:700;
+    text-transform:uppercase;
+    margin:0 0 10px 0;
+    letter-spacing:-0.01em;
+  }
+  .box p{
+    font-size:15.5px;
+    line-height:1.65;
+    color:var(--ink-soft);
+    margin:0;
+    max-width:46ch;
+  }
+
+  /* ---------- JPG vs Vector comparison ---------- */
+  .compare-section{ margin: 8px 0 48px 0; }
+  .compare-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--red);
+    margin:0 0 18px 0;
+  }
+  .compare-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+    max-width:520px;
+  }
+  .compare-item{ text-align:center; }
+  .compare-item .frame{
+    background:var(--cream-2);
+    border-radius:16px;
+    padding:24px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    aspect-ratio:1/1;
+  }
+  .compare-item img{ width:100%; height:100%; object-fit:contain; display:block; }
+  .compare-caption{
+    margin-top:10px;
+    font-family:'Inter', sans-serif;
+    font-size:12.5px;
+    font-weight:700;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+
+  /* ---------- pricing box ---------- */
+  .pricing-box{
+    width:100%;
+    max-width:560px;
+    margin-top:auto;
+    background:var(--cream-3);
+    border-radius:20px;
+    padding:32px 34px;
+  }
+  .pricing-box .num{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--red);
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    margin-bottom:10px;
+    display:block;
+  }
+  .pricing-box h2{
+    font-family:'Inter', sans-serif;
+    font-size:20px;
+    font-weight:700;
+    text-transform:uppercase;
+    margin:0 0 20px 0;
+    letter-spacing:-0.01em;
+  }
+  .price-options{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-bottom:22px;
+  }
+  .price-option{
+    flex:1;
+    min-width:150px;
+    background:var(--cream);
+    border-radius:14px;
+    padding:18px 18px;
+    text-align:center;
+  }
+  .price-option.featured{ background:var(--red); }
+  .price-option.featured .price-time,
+  .price-option.featured .price-amount,
+  .price-option.featured .price-tag{ color:var(--cream); }
+  .price-time{
+    display:block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+  .price-amount{
+    display:block;
+    font-family:'Anton', sans-serif;
+    font-size:30px;
+    color:var(--red);
+    line-height:1;
+  }
+  .price-tag{
+    display:block;
+    margin-top:8px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .pricing-box .guarantee{
+    font-size:15.5px;
+    font-weight:700;
+    color:var(--ink);
+    margin:0 0 14px 0;
+  }
+  .pricing-box p{
+    font-size:15.5px;
+    line-height:1.65;
+    color:var(--ink-soft);
+    margin:0 0 10px 0;
+    max-width:50ch;
+  }
+  .pricing-box p:last-child{ margin-bottom:0; }
+  .pricing-box a{ color:var(--red); font-weight:600; }
+
+  /* ---------- site footer ---------- */
+  .site-footer{
+    position:relative;
+    z-index:1;
+    background:var(--red);
+    color:var(--cream);
+    margin-top:80px;
+    padding: 48px 32px 40px 64px;
+  }
+
+  .footer-icons{ display:flex; align-items:center; gap:18px; margin-bottom:28px; }
+  .footer-icons a{
+    display:flex; align-items:center; justify-content:center;
+    width:42px; height:42px; border-radius:50%;
+    background:rgba(242,236,222,0.14);
+    transition: background 0.15s ease;
+  }
+  .footer-icons a:hover{ background:rgba(242,236,222,0.28); }
+  .footer-icons svg{ width:19px; height:19px; }
+
+  .footer-links{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:16px 28px;
+    margin-bottom:28px;
+  }
+  .footer-links-left{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 28px;
+    padding-top:9px;
+  }
+  .footer-links-left button{
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+    font-weight:600;
+    color:var(--cream);
+    background:none;
+    border:none;
+    padding:0;
+    cursor:pointer;
+    letter-spacing:-0.01em;
+    border-bottom:1px solid transparent;
+  }
+  .footer-links-left button:hover{ border-bottom-color:var(--cream); }
+
+  .footer-links-right{ display:flex; align-items:center; gap:14px; }
+
+  .reviews-toggle{
+    display:flex; align-items:center; gap:7px;
+    background:rgba(242,236,222,0.14);
+    border:none; border-radius:999px;
+    color:var(--cream);
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:600;
+    padding:8px 14px;
+    cursor:pointer;
+  }
+  .reviews-toggle:hover{ background:rgba(242,236,222,0.28); }
+  .reviews-toggle .stars{ color:#FFD54A; font-size:13px; letter-spacing:1px; }
+
+  .lang-switch{ position:relative; }
+  .lang-toggle{
+    display:flex; align-items:center; gap:6px;
+    background:rgba(242,236,222,0.14);
+    border:none; border-radius:999px;
+    color:var(--cream);
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.06em;
+    padding:8px 14px;
+    cursor:pointer;
+  }
+  .lang-toggle:hover{ background:rgba(242,236,222,0.28); }
+  .lang-menu{
+    position:absolute;
+    bottom:calc(100% + 8px);
+    right:0;
+    background:var(--cream);
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 12px 30px rgba(0,0,0,0.28);
+    display:none;
+    min-width:150px;
+    z-index:10;
+  }
+  .lang-menu.open{ display:block; }
+  .lang-menu button{
+    display:block; width:100%; text-align:left;
+    padding:11px 16px;
+    background:none; border:none;
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .lang-menu button:hover{ background:var(--cream-2); }
+  .lang-menu button.active{ font-weight:700; color:var(--red); }
+
+  .footer-brand{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.08em;
+    color:rgba(242,236,222,0.7);
+  }
+
+  /* ---------- modal popups ---------- */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(28,26,22,0.55);
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+    opacity:0; pointer-events:none;
+    transition:opacity 0.15s ease;
+    z-index:50;
+  }
+  .modal-overlay.open{ opacity:1; pointer-events:auto; }
+  .modal-box{
+    position:relative;
+    background:var(--cream);
+    color:var(--ink);
+    max-width:520px;
+    width:100%;
+    max-height:80vh;
+    overflow-y:auto;
+    border-radius:18px;
+    padding:36px 32px;
+  }
+  .modal-box h3{
+    font-family:'Anton', sans-serif;
+    color:var(--red);
+    font-size:26px;
+    text-transform:uppercase;
+    margin:0 0 16px 0;
+  }
+  .modal-box p{ font-size:15px; line-height:1.65; color:var(--ink-soft); margin:0 0 14px 0; }
+  .modal-box a{ color:var(--red); }
+
+  .faq-item{ border-bottom:1px solid var(--line); padding:14px 0; }
+  .faq-item:first-of-type{ padding-top:0; }
+  .faq-item summary{
+    cursor:pointer;
+    list-style:none;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    font-weight:700;
+    font-size:15px;
+    color:var(--ink);
+  }
+  .faq-item summary::-webkit-details-marker{ display:none; }
+  .faq-item summary::after{
+    content:'';
+    flex-shrink:0;
+    width:9px; height:9px;
+    border-right:2px solid var(--ink-soft);
+    border-bottom:2px solid var(--ink-soft);
+    transform:rotate(45deg);
+    transition:transform 0.2s ease;
+    margin-top:-4px;
+  }
+  .faq-item[open] summary::after{ transform:rotate(-135deg); margin-top:4px; }
+  .faq-item .faq-answer{
+    margin:12px 0 0 0;
+    font-size:14.5px;
+    line-height:1.6;
+    color:var(--ink-soft);
+  }
+  .modal-close{
+    position:absolute; top:18px; right:18px;
+    width:32px; height:32px; border-radius:50%;
+    border:none; background:var(--cream-2); color:var(--ink);
+    font-size:18px; line-height:1; cursor:pointer;
+  }
+  .modal-close:hover{ background:var(--line); }
+
+  .star-rating{
+    display:flex;
+    flex-direction:row-reverse;
+    justify-content:flex-end;
+    gap:4px;
+    margin-top:6px;
+  }
+  .star-rating input{
+    position:absolute;
+    opacity:0;
+    width:0; height:0;
+  }
+  .star-rating label{
+    font-size:30px;
+    line-height:1;
+    color:var(--line);
+    cursor:pointer;
+    transition: color 0.1s ease;
+  }
+  .star-rating input:checked ~ label,
+  .star-rating label:hover,
+  .star-rating label:hover ~ label{
+    color:#E8A800;
+  }
+  .star-rating label{ margin:0 !important; display:inline-block !important; }
+
+  .radio-group{ display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+  .radio-group label{
+    display:flex !important;
+    align-items:center;
+    gap:8px;
+    margin:0 !important;
+    font-weight:500 !important;
+    font-size:14px !important;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .radio-group input[type="radio"]{ width:auto; accent-color:var(--red); }
+  .radio-group input[type="checkbox"]{ width:auto; accent-color:var(--red); }
+
+  .field-error{
+    display:none;
+    color:var(--red);
+    font-size:13px;
+    font-weight:600;
+    margin:8px 0 0 0;
+  }
+  .field-error.show{ display:block; }
+
+  /* ---------- order form ---------- */
+  .order-form label{
+    display:block; font-family:'Inter', sans-serif; font-weight:600;
+    font-size:13px; color:var(--ink); margin:18px 0 6px 0;
+  }
+  .order-form label:first-of-type{ margin-top:0; }
+  .order-form input[type="text"],
+  .order-form input[type="email"],
+  .order-form input[type="file"],
+  .order-form textarea{
+    width:100%; padding:11px 13px;
+    border:1px solid var(--line); border-radius:10px;
+    font-family:'Inter', sans-serif; font-size:14px;
+    color:var(--ink); background:#fff;
+  }
+  .order-form textarea{ min-height:80px; resize:vertical; }
+  .order-form input:focus, .order-form textarea:focus{ outline:2px solid var(--red); outline-offset:1px; }
+  .order-form button[type="submit"]{
+    margin-top:24px; width:100%;
+    background:var(--red); color:var(--cream); border:none;
+    padding:15px; border-radius:12px;
+    font-family:'Anton', sans-serif; text-transform:uppercase;
+    letter-spacing:0.02em; font-size:16px; cursor:pointer;
+  }
+  .order-form button[type="submit"]:hover{ background:var(--red-dark); }
+  .order-form .hint{ font-size:12px; color:var(--ink-soft); margin:12px 0 0 0; }
+
+  /* ---------- CTA (position controlled by JS: fixed while floating, absolute once docked) ---------- */
+  .cta-wrap{
+    position:fixed;
+    z-index:5;
+    display:flex; flex-direction:column; align-items:center; gap:14px;
+  }
+  .cta-wrap.docked{
+    position:absolute;
+  }
+  .cta-button{
+    display:flex; align-items:center; justify-content:center;
+    width:280px; height:88px; border-radius:20px;
+    background:var(--red); color:var(--cream);
+    text-decoration:none;
+    font-family:'Anton', sans-serif; font-size:22px; text-transform:uppercase;
+    letter-spacing:0.01em; line-height:1.15; text-align:center;
+    padding:16px 28px;
+    box-shadow: 0 18px 40px -12px rgba(179,44,28,0.55);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    border:none; cursor:pointer;
+  }
+  .cta-button:hover{ transform: scale(1.045); background:var(--red-dark); box-shadow: 0 22px 48px -10px rgba(179,44,28,0.65); }
+  .cta-button:active{ transform: scale(0.98); }
+  .cta-button:focus-visible{ outline:3px solid var(--ink); outline-offset:5px; }
+
+  @media (max-width: 880px){
+    .content{ display:block; padding: 48px 24px 160px 24px; }
+    .side-col{ display:contents; }
+    .cta-wrap{ position:fixed; top:auto; bottom:20px; right:50%; transform:translateX(50%); }
+    .cta-button{ width:200px; height:64px; border-radius:16px; font-size:15px; padding:10px 20px; box-shadow: 0 12px 30px -10px rgba(179,44,28,0.6); }
+    h1.title img{ max-width:100%; }
+    .site-footer{ padding: 40px 24px 120px 24px; }
+    .footer-links{ flex-direction:column; gap:20px; }
+    .footer-links-right{ flex-wrap:wrap; }
+    .price-options{ flex-direction:column; }
+    .pricing-box{ max-width:100%; margin-top:56px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){ .cta-button{ transition:none; } }
+</style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<div class="page">
+  <main class="content">
+
+    <div class="main-col">
+
+    <div class="hero">
+      <h1 class="title">
+        <img id="title-img" src="title-1.png" alt="Get Vector">
+      </h1>
+
+      <div class="hero-icon" aria-hidden="true">
+        <svg viewBox="0 0 360 110" xmlns="http://www.w3.org/2000/svg">
+          <clipPath id="jpgClip">
+            <path d="M20 10 H70 L90 30 V100 H20 Z"/>
+          </clipPath>
+          <g clip-path="url(#jpgClip)">
+            <rect x="20" y="10" width="70" height="90" fill="#D9D2C0"/>
+            <rect x="20" y="10" width="17.5" height="15" fill="#CFC7B2"/>
+            <rect x="55" y="10" width="17.5" height="15" fill="#CFC7B2"/>
+            <rect x="20" y="40" width="17.5" height="15" fill="#CFC7B2"/>
+            <rect x="55" y="40" width="17.5" height="15" fill="#CFC7B2"/>
+            <rect x="37.5" y="25" width="17.5" height="15" fill="#C2BAA4"/>
+            <rect x="72.5" y="25" width="17.5" height="15" fill="#C2BAA4"/>
+            <rect x="37.5" y="55" width="17.5" height="15" fill="#C2BAA4"/>
+            <rect x="72.5" y="55" width="17.5" height="15" fill="#C2BAA4"/>
+            <rect x="20" y="70" width="17.5" height="15" fill="#B9AF97"/>
+            <rect x="55" y="70" width="17.5" height="15" fill="#B9AF97"/>
+            <rect x="37.5" y="85" width="17.5" height="15" fill="#B9AF97"/>
+            <rect x="72.5" y="85" width="17.5" height="15" fill="#B9AF97"/>
+          </g>
+          <path d="M20 10 H70 L90 30 V100 H20 Z" fill="none" stroke="#1C1A16" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M70 10 V30 H90 Z" fill="#C7C0AC" stroke="#1C1A16" stroke-width="3" stroke-linejoin="round"/>
+          <text x="55" y="78" font-family="Inter, sans-serif" font-weight="800" font-size="17" fill="#1C1A16" text-anchor="middle">JPG</text>
+
+          <circle cx="180" cy="55" r="24" fill="#DD3B25"/>
+          <path d="M170 55 H190 M182 47 L190 55 L182 63" stroke="#EDEAE0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+          <path d="M270 10 H320 L340 30 V100 H270 Z" fill="none" stroke="#DD3B25" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M320 10 V30 H340 Z" fill="none" stroke="#DD3B25" stroke-width="3" stroke-linejoin="round"/>
+          <text x="305" y="78" font-family="Inter, sans-serif" font-weight="800" font-size="17" fill="#DD3B25" text-anchor="middle">EPS</text>
+        </svg>
+      </div>
+
+      <p class="eyebrow-tag" data-i18n="eyebrow_tag">JPG/PNG to EPS logo conversion</p>
+      <p class="subline" data-i18n="subline">Hand drawn, fully editable and print ready vector files, in your mailbox within <b>3 hours</b></p>
+
+      <hr class="title-rule" aria-hidden="true">
+    </div>
+
+    <div class="boxes">
+
+      <div class="box">
+        <span class="num">01</span>
+        <h2 data-i18n="box1_title">JPEG vs Vector</h2>
+        <p data-i18n="box1_p">A JPG or PNG is built from pixels. Zoom in far enough and it turns blocky. Printers, embroiderers and sign makers need a vector file instead, built from lines and shapes, so it stays sharp at any size. Renaming a JPG to ".eps" doesn't change that.</p>
+      </div>
+
+      <div class="box">
+        <span class="num">02</span>
+        <h2 data-i18n="box2_title">How it works</h2>
+        <p data-i18n="box2_p">Once we receive your PNG or JPG, whether it's an old logo or something generated by AI, our designers recreate it as a fully editable vector, with separate layers where relevant. You'll get a watermarked preview within 3 hours to check over, and once everything looks right and payment is made, the final file lands in your inbox.</p>
+      </div>
+
+      <div class="box">
+        <span class="num">03</span>
+        <h2 data-i18n="box3_title">What you get</h2>
+        <p data-i18n="box3_p">A clean EPS, SVG, AI or PDF file, whichever you choose when you upload your logo, hand traced and ready for print, embroidery or signage. Fully editable and yours to use however you need.</p>
+      </div>
+
+    </div>
+
+    <div class="compare-section">
+      <p class="compare-label" data-i18n="compare_label">See the difference</p>
+      <div class="compare-grid">
+        <div class="compare-item">
+          <div class="frame"><img id="compare-left-img" src="compare-1-left.svg" alt="JPG / PNG example"></div>
+          <div class="compare-caption" data-i18n="compare_left_caption">JPG / PNG</div>
+        </div>
+        <div class="compare-item">
+          <div class="frame"><img id="compare-right-img" src="compare-1-right.svg" alt="Vector example"></div>
+          <div class="compare-caption" data-i18n="compare_right_caption">Vector file</div>
+        </div>
+      </div>
+    </div>
+
+    </div>
+
+    <div class="side-col">
+      <div class="cta-wrap">
+        <button type="button" class="cta-button" data-modal="order" data-i18n="cta_button">
+          Upload your logo
+        </button>
+      </div>
+
+      <div class="pricing-box">
+        <span class="num" data-i18n="pricing_label">Pricing</span>
+        <h2 data-i18n="pricing_title">What it costs</h2>
+        <div class="price-options">
+          <div class="price-option featured">
+            <span class="price-time" data-i18n="price_standard_time">3 hours</span>
+            <span class="price-amount">€24.99</span>
+            <span class="price-tag" data-i18n="price_standard_tag">Standard</span>
+          </div>
+          <div class="price-option">
+            <span class="price-time" data-i18n="price_budget_time">24 hours</span>
+            <span class="price-amount">€14.99</span>
+            <span class="price-tag" data-i18n="price_budget_tag">Budget</span>
+          </div>
+        </div>
+        <p class="guarantee" data-i18n="pricing_guarantee">Not satisfied? Get your money back.</p>
+        <p data-i18n-html="pricing_contact">For large files or particularly complex artwork, please contact <a href="mailto:info@getvector.net">info@getvector.net</a> so we can discuss the right service option for your project.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-icons">
+      <a href="mailto:info@getvector.net" aria-label="Email us">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 6h18v12H3V6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M3.5 6.5 12 13l8.5-6.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="#" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor"/>
+        </svg>
+      </a>
+    </div>
+
+    <div class="footer-links">
+      <nav class="footer-links-left">
+        <button type="button" data-modal="about" data-i18n="footer_about">About us</button>
+        <button type="button" data-modal="careers" data-i18n="footer_careers">Careers</button>
+        <button type="button" data-modal="privacy" data-i18n="footer_privacy">Privacy policy</button>
+        <button type="button" data-modal="faq" data-i18n="footer_faq">FAQ</button>
+      </nav>
+
+      <div class="footer-links-right">
+        <button type="button" class="reviews-toggle" data-modal="review">
+          <span class="stars">★</span>
+          <span data-i18n="review_cta">Write a review</span>
+        </button>
+
+        <div class="lang-switch">
+          <button type="button" class="lang-toggle" id="lang-toggle">
+            <span id="lang-current">EN</span>
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <div class="lang-menu" id="lang-menu">
+            <button type="button" data-lang="en">English</button>
+            <button type="button" data-lang="nl">Nederlands</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-brand">getvector.net</div>
+  </footer>
+
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-box">
+      <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ---------- Title artwork rotation ---------- */
+  const titleImages = ['title-1.png', 'title-2.png'];
+  document.getElementById('title-img').src = titleImages[Math.floor(Math.random() * titleImages.length)];
+
+  /* ---------- JPG vs Vector comparison rotation ---------- */
+  /* Add more pairs here as you get real artwork. Left/right must share the same index. */
+  const comparePairs = [
+    { left: 'compare-1-left.svg', right: 'compare-1-right.svg' }
+  ];
+  const pair = comparePairs[Math.floor(Math.random() * comparePairs.length)];
+  document.getElementById('compare-left-img').src = pair.left;
+  document.getElementById('compare-right-img').src = pair.right;
+
+  /* ---------- CTA button: floats centered in the viewport, docks above the pricing box ---------- */
+  const ctaWrap = document.querySelector('.cta-wrap');
+  const pricingBoxEl = document.querySelector('.pricing-box');
+  const pageEl = document.querySelector('.page');
+  const DOCK_GAP = 32;
+
+  function positionCta(){
+    if(window.innerWidth <= 880){
+      // Mobile: let the CSS media query handle it entirely.
+      ctaWrap.classList.remove('docked');
+      ctaWrap.style.position = '';
+      ctaWrap.style.top = '';
+      ctaWrap.style.left = '';
+      return;
+    }
+
+    const ctaHeight = ctaWrap.offsetHeight;
+    const ctaWidth = ctaWrap.offsetWidth;
+    const pricingRect = pricingBoxEl.getBoundingClientRect();
+    const pageRect = pageEl.getBoundingClientRect();
+
+    const floatTop = (window.innerHeight - ctaHeight) / 2;
+    const floatBottom = floatTop + ctaHeight;
+    const wouldOverlap = pricingRect.top < (floatBottom + DOCK_GAP);
+
+    if(wouldOverlap){
+      // Dock: absolute position relative to .page, computed so it lands just above the pricing box
+      // and then scrolls away naturally with the rest of the page.
+      const relativeTop = (pricingRect.top - pageRect.top) - ctaHeight - DOCK_GAP;
+      const relativeRight = pageRect.right - pricingRect.right;
+      ctaWrap.classList.add('docked');
+      ctaWrap.style.position = 'absolute';
+      ctaWrap.style.top = relativeTop + 'px';
+      ctaWrap.style.left = '';
+      ctaWrap.style.right = relativeRight + 'px';
+    } else {
+      ctaWrap.classList.remove('docked');
+      ctaWrap.style.position = 'fixed';
+      ctaWrap.style.top = floatTop + 'px';
+      ctaWrap.style.right = (window.innerWidth - pricingBoxEl.getBoundingClientRect().right) + 'px';
+      ctaWrap.style.left = '';
+    }
+  }
+
+  let ctaTicking = false;
+  function requestCtaUpdate(){
+    if(!ctaTicking){
+      window.requestAnimationFrame(function(){
+        positionCta();
+        ctaTicking = false;
+      });
+      ctaTicking = true;
+    }
+  }
+  window.addEventListener('scroll', requestCtaUpdate);
+  window.addEventListener('resize', requestCtaUpdate);
+  window.addEventListener('load', positionCta);
+  positionCta();
+
+  /* ---------- Translations ---------- */
+  const translations = {
+    en: {
+      eyebrow_tag: 'JPG/PNG to EPS logo conversion',
+      subline: 'Hand drawn, fully editable and print ready vector files, in your mailbox within <b>3 hours</b>',
+      box1_title: 'JPEG vs Vector',
+      box1_p: 'A JPG or PNG is built from pixels. Zoom in far enough and it turns blocky. Printers, embroiderers and sign makers need a vector file instead, built from lines and shapes, so it stays sharp at any size. Renaming a JPG to ".eps" doesn\'t change that.',
+      box2_title: 'How it works',
+      box2_p: 'Once we receive your PNG or JPG, whether it\'s an old logo or something generated by AI, our designers recreate it as a fully editable vector, with separate layers where relevant. You\'ll get a watermarked preview within 3 hours to check over, and once everything looks right and payment is made, the final file lands in your inbox.',
+      box3_title: 'What you get',
+      box3_p: 'A clean EPS, SVG, AI or PDF file, whichever you choose when you upload your logo, hand traced and ready for print, embroidery or signage. Fully editable and yours to use however you need.',
+      compare_label: 'See the difference',
+      compare_left_caption: 'JPG / PNG',
+      compare_right_caption: 'Vector file',
+      pricing_label: 'Pricing',
+      pricing_title: 'What it costs',
+      price_standard_time: '3 hours',
+      price_standard_tag: 'Standard',
+      price_budget_time: '24 hours',
+      price_budget_tag: 'Budget',
+      pricing_guarantee: 'Not satisfied? Get your money back.',
+      pricing_contact: 'For large files or particularly complex artwork, please contact <a href="mailto:info@getvector.net">info@getvector.net</a> so we can discuss the right service option for your project.',
+      cta_button: 'Upload your logo',
+      footer_about: 'About us',
+      footer_careers: 'Careers',
+      footer_privacy: 'Privacy policy',
+      footer_faq: 'FAQ',
+      review_cta: 'Write a review',
+      modals: {
+        about: {
+          title: 'About us',
+          body: '<p>Full text coming soon.</p>'
+        },
+        careers: {
+          title: 'Careers',
+          body: '<p>If you\'re looking for work or an internship, please email <a href="mailto:info@getvector.net">info@getvector.net</a>.</p>'
+        },
+        privacy: {
+          title: 'Privacy policy',
+          body: '<p>This is placeholder text. Replace it with your own policy before launch, ideally checked against current GDPR guidance since you\'re operating from the Netherlands.</p>' +
+                '<p><strong>Data we collect:</strong> the information you send us to request a vectorisation, meaning your logo file, name, email address and any notes in your message.</p>' +
+                '<p><strong>What we use it for:</strong> solely to deliver the service you requested, converting your file and sending it back to you.</p>' +
+                '<p><strong>Storage:</strong> files and correspondence are kept only as long as needed to complete your order, then deleted.</p>' +
+                '<p><strong>Sharing:</strong> we do not sell or share your files or personal information with third parties.</p>' +
+                '<p><strong>Contact:</strong> questions about your data can be sent to <a href="mailto:info@getvector.net">info@getvector.net</a>.</p>'
+        },
+        faq: {
+          title: 'FAQ',
+          body: '<details class="faq-item"><summary>What file formats do you accept?</summary><div class="faq-answer">PNG and JPEG. If you have something else, just ask.</div></details>' +
+            '<details class="faq-item"><summary>What do I get back?</summary><div class="faq-answer">EPS, SVG, AI or PDF, whichever you select when you upload your logo. All fully editable and hand traced.</div></details>' +
+            '<details class="faq-item"><summary>How does the process work?</summary><div class="faq-answer">You\'ll receive a watermarked preview to check over. Once you\'re happy with it, you pay, and the final unwatermarked file is sent to you automatically as soon as payment comes through.</div></details>' +
+            '<details class="faq-item"><summary>What if I\'m not happy with the preview?</summary><div class="faq-answer">Let us know before paying and we\'ll revise it until it\'s right. If you\'re still not satisfied, you get your money back.</div></details>' +
+            '<details class="faq-item"><summary>Does this work for AI-generated logos?</summary><div class="faq-answer">Yes. Just note that more complex AI-generated designs can need extra work to clean up into a proper vector, so these may take a little longer or fall under our complex-file pricing.</div></details>' +
+            '<details class="faq-item"><summary>How much does it cost?</summary><div class="faq-answer">€24.99 for 3 hour delivery, or €14.99 for 24 hour delivery. For large or particularly complex files, contact us first so we can agree on the right option.</div></details>'
+        },
+        review: {
+          title: 'Write a review',
+          ratingLabel: 'Your rating',
+          nameLabel: 'Name',
+          reviewLabel: 'Your review',
+          reviewPlaceholder: 'Tell us how it went',
+          submit: 'Submit review',
+          hint: 'Thanks for taking the time. Reviews are read and posted here individually for now.'
+        },
+        order: {
+          title: 'Upload your logo',
+          nameLabel: 'Name',
+          emailLabel: 'Email',
+          fileLabel: 'Logo file (PNG or JPG)',
+          speedLabel: 'Delivery speed',
+          speedStandard: '3 hours (€24.99)',
+          speedBudget: '24 hours (€14.99)',
+          formatLabel: 'Which file format(s) do you need?',
+          formatEps: 'EPS',
+          formatSvg: 'SVG',
+          formatAi: 'AI',
+          formatPdf: 'PDF',
+          formatError: 'Please select at least one file format.',
+          notesLabel: 'Notes (optional)',
+          notesPlaceholder: 'Anything we should know about your logo?',
+          fontLabel: 'Does the logo use a specific font? (optional)',
+          fontPlaceholder: 'Font name, or leave blank if unsure',
+          submit: 'Send request',
+          hint: 'Max file size 10 MB. You will hear back by email within 3 hours with a watermarked preview.'
+        }
+      }
+    },
+    nl: {
+      eyebrow_tag: 'JPG/PNG naar EPS logo conversie',
+      subline: 'Handgetekend, volledig bewerkbaar en printklaar vectorbestand, in je inbox binnen <b>3 uur</b>',
+      box1_title: 'JPEG versus Vector',
+      box1_p: 'Een JPG of PNG bestaat uit pixels. Zoom ver genoeg in en het beeld wordt blokkerig. Drukkerijen, borduurbedrijven en reclamemakers hebben juist een vectorbestand nodig, opgebouwd uit lijnen en vormen, zodat het op elk formaat scherp blijft. Een JPG hernoemen naar ".eps" verandert daar niets aan.',
+      box2_title: 'Hoe het werkt',
+      box2_p: 'Zodra we je PNG of JPG ontvangen, of dat nu een bestaand logo is of iets dat door AI is gegenereerd, tekenen onze ontwerpers het opnieuw als een volledig bewerkbaar vectorbestand, met aparte lagen waar relevant. Binnen 3 uur ontvang je een voorbeeld met watermerk om te controleren, en zodra alles klopt en betaald is, ontvang je het definitieve bestand in je inbox.',
+      box3_title: 'Wat je krijgt',
+      box3_p: 'Een schoon EPS, SVG, AI of PDF bestand, afhankelijk van wat je kiest bij het uploaden van je logo, met de hand nagetekend en klaar voor print, borduurwerk of signing. Volledig bewerkbaar en van jou om te gebruiken zoals je wilt.',
+      compare_label: 'Zie het verschil',
+      compare_left_caption: 'JPG / PNG',
+      compare_right_caption: 'Vectorbestand',
+      pricing_label: 'Prijzen',
+      pricing_title: 'Wat het kost',
+      price_standard_time: '3 uur',
+      price_standard_tag: 'Standaard',
+      price_budget_time: '24 uur',
+      price_budget_tag: 'Voordelig',
+      pricing_guarantee: 'Niet tevreden? Geld terug.',
+      pricing_contact: 'Voor grote bestanden of bijzonder complexe artwork kun je contact opnemen met <a href="mailto:info@getvector.net">info@getvector.net</a>, dan bespreken we samen de beste optie voor jouw project.',
+      cta_button: 'Upload je logo',
+      footer_about: 'Over ons',
+      footer_careers: 'Vacatures',
+      footer_privacy: 'Privacybeleid',
+      footer_faq: 'FAQ',
+      review_cta: 'Schrijf een review',
+      modals: {
+        about: {
+          title: 'Over ons',
+          body: '<p>Volledige tekst volgt binnenkort.</p>'
+        },
+        careers: {
+          title: 'Vacatures',
+          body: '<p>Ben je op zoek naar werk of een stage, stuur dan een mail naar <a href="mailto:info@getvector.net">info@getvector.net</a>.</p>'
+        },
+        privacy: {
+          title: 'Privacybeleid',
+          body: '<p>Dit is een voorbeeldtekst. Vervang deze door je eigen beleid voordat je live gaat, bij voorkeur getoetst aan de actuele AVG richtlijnen.</p>' +
+                '<p><strong>Gegevens die we verzamelen:</strong> de informatie die je ons stuurt om een vectorisatie aan te vragen, zoals je logobestand, naam, e-mailadres en eventuele opmerkingen.</p>' +
+                '<p><strong>Waar we het voor gebruiken:</strong> uitsluitend om de gevraagde dienst te leveren, oftewel je bestand omzetten en terugsturen.</p>' +
+                '<p><strong>Bewaartermijn:</strong> bestanden en correspondentie worden alleen bewaard zolang nodig om je bestelling af te ronden, en daarna verwijderd.</p>' +
+                '<p><strong>Delen met derden:</strong> we verkopen of delen je bestanden of persoonsgegevens niet met derden.</p>' +
+                '<p><strong>Contact:</strong> vragen over je gegevens kun je sturen naar <a href="mailto:info@getvector.net">info@getvector.net</a>.</p>'
+        },
+        faq: {
+          title: 'Veelgestelde vragen',
+          body: '<details class="faq-item"><summary>Welke bestandsformaten accepteren jullie?</summary><div class="faq-answer">PNG en JPEG. Heb je iets anders, vraag het gewoon.</div></details>' +
+            '<details class="faq-item"><summary>Wat krijg ik terug?</summary><div class="faq-answer">EPS, SVG, AI of PDF, afhankelijk van wat je selecteert bij het uploaden van je logo. Altijd volledig bewerkbaar en met de hand nagetekend.</div></details>' +
+            '<details class="faq-item"><summary>Hoe werkt het proces?</summary><div class="faq-answer">Je ontvangt eerst een voorbeeld met watermerk om te controleren. Zodra je tevreden bent, betaal je, en het definitieve bestand zonder watermerk wordt automatisch naar je verstuurd zodra de betaling binnen is.</div></details>' +
+            '<details class="faq-item"><summary>Wat als ik niet tevreden ben met het voorbeeld?</summary><div class="faq-answer">Laat het ons voor de betaling weten, dan passen we het aan totdat het klopt. Ben je daarna nog niet tevreden, dan krijg je je geld terug.</div></details>' +
+            '<details class="faq-item"><summary>Werkt dit ook voor door AI gegenereerde logo\'s?</summary><div class="faq-answer">Ja. Houd er wel rekening mee dat complexere door AI gegenereerde ontwerpen extra werk kunnen vergen om goed om te zetten naar een vectorbestand, dus deze kunnen wat langer duren of onder onze prijzen voor complexe bestanden vallen.</div></details>' +
+            '<details class="faq-item"><summary>Wat kost het?</summary><div class="faq-answer">€24,99 voor levering binnen 3 uur, of €14,99 voor levering binnen 24 uur. Bij grote of bijzonder complexe bestanden, neem eerst contact op zodat we de juiste optie kunnen afspreken.</div></details>'
+        },
+        review: {
+          title: 'Schrijf een review',
+          ratingLabel: 'Jouw beoordeling',
+          nameLabel: 'Naam',
+          reviewLabel: 'Jouw review',
+          reviewPlaceholder: 'Vertel ons hoe het ging',
+          submit: 'Review versturen',
+          hint: 'Bedankt voor je tijd. Reviews worden voorlopig individueel gelezen en geplaatst.'
+        },
+        order: {
+          title: 'Upload je logo',
+          nameLabel: 'Naam',
+          emailLabel: 'E-mail',
+          fileLabel: 'Logobestand (PNG of JPG)',
+          speedLabel: 'Levertijd',
+          speedStandard: '3 uur (€24,99)',
+          speedBudget: '24 uur (€14,99)',
+          formatLabel: 'Welke bestandsformaten heb je nodig?',
+          formatEps: 'EPS',
+          formatSvg: 'SVG',
+          formatAi: 'AI',
+          formatPdf: 'PDF',
+          formatError: 'Kies minstens één bestandsformaat.',
+          notesLabel: 'Opmerkingen (optioneel)',
+          notesPlaceholder: 'Iets dat we moeten weten over je logo?',
+          fontLabel: 'Gebruikt het logo een specifiek lettertype? (optioneel)',
+          fontPlaceholder: 'Naam van het lettertype, of laat leeg indien onbekend',
+          submit: 'Verstuur aanvraag',
+          hint: 'Maximale bestandsgrootte 10 MB. Je hoort binnen 3 uur via e-mail van ons, met een voorbeeld met watermerk.'
+        }
+      }
+    }
+  };
+
+  let currentLang = localStorage.getItem('gv_lang') || (location.hostname.endsWith('.nl') ? 'nl' : 'en');
+
+  function applyLanguage(lang){
+    currentLang = lang;
+    localStorage.setItem('gv_lang', lang);
+    document.getElementById('html-root').lang = lang;
+    document.getElementById('lang-current').textContent = lang.toUpperCase();
+
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      const key = el.getAttribute('data-i18n');
+      if(translations[lang][key] !== undefined){ el.textContent = translations[lang][key]; }
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(function(el){
+      const key = el.getAttribute('data-i18n-html');
+      if(translations[lang][key] !== undefined){ el.innerHTML = translations[lang][key]; }
+    });
+    // subline uses innerHTML because it contains a <b> tag
+    document.querySelector('.subline').innerHTML = translations[lang].subline;
+
+    document.querySelectorAll('.lang-menu button').forEach(function(btn){
+      btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+  }
+
+  document.getElementById('lang-toggle').addEventListener('click', function(){
+    document.getElementById('lang-menu').classList.toggle('open');
+  });
+  document.querySelectorAll('.lang-menu [data-lang]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      applyLanguage(btn.dataset.lang);
+      document.getElementById('lang-menu').classList.remove('open');
+    });
+  });
+  document.addEventListener('click', function(e){
+    if(!e.target.closest('.lang-switch')){ document.getElementById('lang-menu').classList.remove('open'); }
+  });
+
+  applyLanguage(currentLang);
+
+  /* ---------- Modals ---------- */
+  const overlay = document.getElementById('modal-overlay');
+  const modalBody = document.getElementById('modal-body');
+
+  function buildOrderForm(t){
+    return '<form action="https://formsubmit.co/info@getvector.net" method="POST" enctype="multipart/form-data" class="order-form">' +
+      '<input type="hidden" name="_subject" value="New logo vectorisation request">' +
+      '<input type="hidden" name="_next" value="https://getvector.net/thanks.html">' +
+      '<input type="hidden" name="_captcha" value="true">' +
+      '<label for="order-name">' + t.nameLabel + '</label>' +
+      '<input type="text" id="order-name" name="Name" required>' +
+      '<label for="order-email">' + t.emailLabel + '</label>' +
+      '<input type="email" id="order-email" name="Email" required>' +
+      '<label for="order-file">' + t.fileLabel + '</label>' +
+      '<input type="file" id="order-file" name="Logo file" accept="image/png, image/jpeg" required>' +
+      '<label>' + t.speedLabel + '</label>' +
+      '<div class="radio-group">' +
+        '<label><input type="radio" name="Delivery speed" value="' + t.speedStandard + '" checked required> ' + t.speedStandard + '</label>' +
+        '<label><input type="radio" name="Delivery speed" value="' + t.speedBudget + '"> ' + t.speedBudget + '</label>' +
+      '</div>' +
+      '<label>' + t.formatLabel + '</label>' +
+      '<div class="radio-group" id="format-group">' +
+        '<label><input type="checkbox" class="format-checkbox" name="Format" value="' + t.formatEps + '"> ' + t.formatEps + '</label>' +
+        '<label><input type="checkbox" class="format-checkbox" name="Format" value="' + t.formatSvg + '"> ' + t.formatSvg + '</label>' +
+        '<label><input type="checkbox" class="format-checkbox" name="Format" value="' + t.formatAi + '"> ' + t.formatAi + '</label>' +
+        '<label><input type="checkbox" class="format-checkbox" name="Format" value="' + t.formatPdf + '"> ' + t.formatPdf + '</label>' +
+      '</div>' +
+      '<p class="field-error" id="format-error">' + t.formatError + '</p>' +
+      '<label for="order-notes">' + t.notesLabel + '</label>' +
+      '<textarea id="order-notes" name="Notes" placeholder="' + t.notesPlaceholder + '"></textarea>' +
+      '<label for="order-font">' + t.fontLabel + '</label>' +
+      '<input type="text" id="order-font" name="Font" placeholder="' + t.fontPlaceholder + '">' +
+      '<button type="submit">' + t.submit + '</button>' +
+      '<p class="hint">' + t.hint + '</p>' +
+      '</form>';
+  }
+
+  function buildReviewForm(t){
+    return '<form action="https://formsubmit.co/info@getvector.net" method="POST" class="order-form">' +
+      '<input type="hidden" name="_subject" value="New review submission">' +
+      '<input type="hidden" name="_next" value="https://getvector.net/thanks.html">' +
+      '<input type="hidden" name="_captcha" value="true">' +
+      '<label>' + t.ratingLabel + '</label>' +
+      '<div class="star-rating">' +
+        '<input type="radio" id="rate-5" name="Rating" value="5" required><label for="rate-5">★</label>' +
+        '<input type="radio" id="rate-4" name="Rating" value="4"><label for="rate-4">★</label>' +
+        '<input type="radio" id="rate-3" name="Rating" value="3"><label for="rate-3">★</label>' +
+        '<input type="radio" id="rate-2" name="Rating" value="2"><label for="rate-2">★</label>' +
+        '<input type="radio" id="rate-1" name="Rating" value="1"><label for="rate-1">★</label>' +
+      '</div>' +
+      '<label for="review-name">' + t.nameLabel + '</label>' +
+      '<input type="text" id="review-name" name="Name" required>' +
+      '<label for="review-text">' + t.reviewLabel + '</label>' +
+      '<textarea id="review-text" name="Review" required placeholder="' + t.reviewPlaceholder + '"></textarea>' +
+      '<button type="submit">' + t.submit + '</button>' +
+      '<p class="hint">' + t.hint + '</p>' +
+      '</form>';
+  }
+
+  document.querySelectorAll('[data-modal]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const key = btn.dataset.modal;
+      const m = translations[currentLang].modals[key];
+      if(!m) return;
+      let body;
+      if(key === 'order'){ body = buildOrderForm(m); }
+      else if(key === 'review'){ body = buildReviewForm(m); }
+      else { body = m.body; }
+      modalBody.innerHTML = '<h3>' + m.title + '</h3>' + body;
+      overlay.classList.add('open');
+
+      if(key === 'order'){
+        const orderForm = modalBody.querySelector('.order-form');
+        const formatError = modalBody.querySelector('#format-error');
+        const formatBoxes = modalBody.querySelectorAll('.format-checkbox');
+        orderForm.addEventListener('submit', function(e){
+          const anyChecked = Array.prototype.some.call(formatBoxes, function(cb){ return cb.checked; });
+          if(!anyChecked){
+            e.preventDefault();
+            formatError.classList.add('show');
+          }
+        });
+        formatBoxes.forEach(function(cb){
+          cb.addEventListener('change', function(){
+            formatError.classList.remove('show');
+          });
+        });
+      }
+    });
+  });
+
+  function closeModal(){ overlay.classList.remove('open'); }
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); });
+</script>
+
+</body>
+</html>
